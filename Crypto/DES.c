@@ -10,7 +10,7 @@ void compared(int ret);
 void plain(char message0[321], int message1[2560], int blocks[40][64]);
 void IP(int blocks[40][64], const int input[40][64], int output[40][64], const int ip[64]);
 void divide(int output[40][64], int L[40][32], int R[40][32]);
-void ebox(int R[40][32], int EBOX[40][48]);
+void ebox(int R[40][32], int EBOX[40][48], const int Etable[48]);
 
 
 int main()
@@ -30,10 +30,11 @@ int main()
 
    char message0[321] = { 0, };
    int message1[2560] = { 0, };
-   int blocks[40][64] = { {0,}{ 0, } };
+   int blocks[40][64] = { { 0, }{ 0, } };
    plain(message0, message1, blocks);
 
-   const int ip[64] = {
+   const int ip[64] =
+   {
      58, 50, 42, 34, 26, 18, 10, 2,
      60, 52, 44, 36, 28, 20, 12, 4,
      62, 54, 46, 38, 30, 22, 14, 6,
@@ -51,14 +52,23 @@ int main()
    int R[40][32] = { {0, },{0, } };
    divide(output, L, R);
 
+   const int Etable[48] = 
+   {
+     32, 1, 2, 3, 4, 5,
+     4, 5, 6, 7, 8, 9,
+     8, 9, 10, 11, 12, 13,
+     12, 13, 14, 15, 16, 17,
+     16, 17, 18, 19, 20, 21,
+     20, 21, 22, 23, 24, 25,
+     24, 25, 26, 27, 28, 29,
+     28, 29, 30, 31, 32, 1
+   };
    int EBOX[40][48] = { {0, },{0, } };
-   ebox(R, EBOX);
+   ebox(R, EBOX, Etable);
 
 }
 
-
-
-
+// --------------------------- 여기서부터 함수 구역 --------------------------- //
 
 int password(char pass0[6], char pass1[6])
 {
@@ -191,7 +201,7 @@ void divide(int output[40][64], int L[40][32], int R[40][32]) // 32비트씩 반
     }
 }
 
-void ebox(int R[40][32], int EBOX[40][48])
+void ebox(int R[40][32], int EBOX[40][48], const int Etable[48])
 {
 
 }
