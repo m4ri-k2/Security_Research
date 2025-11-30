@@ -203,6 +203,13 @@ void divide(int output[40][64], int L[40][32], int R[40][32]) // 32비트씩 반
 
 void ebox(int R[40][32], int EBOX[40][48], const int Etable[48])
 {
-
+    for (int i = 0; i < 40; i++)
+    {
+        for (int j = 0; j < 48; j++)
+        {
+            int src_index = Etable[j] - 1;
+            EBOX[i][j] = R[i][src_index];
+        }
+    }
 }
 
