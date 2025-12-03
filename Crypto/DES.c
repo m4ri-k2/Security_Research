@@ -11,6 +11,7 @@ void plain(char message0[321], int message1[2560], int blocks[40][64]);
 void IP(int blocks[40][64], const int input[40][64], int output[40][64], const int ip[64]);
 void divide(int output[40][64], int L[40][32], int R[40][32]);
 void ebox(int R[40][32], int EBOX[40][48], const int Etable[48]);
+void makekey64(unsigned char key[8], int key64[64]);
 
 
 int main()
@@ -23,7 +24,6 @@ int main()
    printf("\n\n=========================================================================================");
    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
    printf("\n\n >> Please enter a 5-character password : ");
-   password(pass0, pass1);
 
    int ret = password(pass0, pass1);
    compared(ret);
@@ -65,6 +65,14 @@ int main()
    };
    int EBOX[40][48] = { {0, },{0, } };
    ebox(R, EBOX, Etable);
+
+   unsigned char key[8] =
+   {
+     0x13, 0x34, 0x57, 0x79,
+     0x9B, 0xBC, 0xDF, 0xF1
+   };
+   int key64[64] = { 0, };
+   makekey64(key, key64);
 
 }
 
@@ -209,6 +217,17 @@ void ebox(int R[40][32], int EBOX[40][48], const int Etable[48])
         {
             int src_index = Etable[j] - 1;
             EBOX[i][j] = R[i][src_index];
+        }
+    }
+}
+
+void makekey64(unsigned char key[8], int key64[64])
+{
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            key64[i * 8 + j] = (key[i] >> (7 - j)) & 1;
         }
     }
 }
