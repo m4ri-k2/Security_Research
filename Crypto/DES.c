@@ -12,6 +12,9 @@ void IP(int blocks[40][64], const int input[40][64], int output[40][64], const i
 void divide(int output[40][64], int L[40][32], int R[40][32]);
 void ebox(int R[40][32], int EBOX[40][48], const int Etable[48]);
 void makekey64(unsigned char key[8], int key64[64]);
+void PC1(const int pc1[56], int pc1table[56], const int key64[64]);
+void devideCD(int C0[28], int D0[28], int pc1table[56]);
+
 
 
 int main()
@@ -25,14 +28,17 @@ int main()
    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
    printf("\n\n >> Please enter a 5-character password : ");
 
+   
    int ret = password(pass0, pass1);
    compared(ret);
 
+   
    char message0[321] = { 0, };
    int message1[2560] = { 0, };
    int blocks[40][64] = { { 0, }{ 0, } };
    plain(message0, message1, blocks);
 
+   
    const int ip[64] =
    {
      58, 50, 42, 34, 26, 18, 10, 2,
@@ -48,10 +54,12 @@ int main()
    int output[40][64] = { {0,},{0,} };
    IP(blocks, input, output, ip);
 
+   
    int L[40][32] = { {0, },{0, } };
    int R[40][32] = { {0, },{0, } };
    divide(output, L, R);
 
+   
    const int Etable[48] = 
    {
      32, 1, 2, 3, 4, 5,
@@ -66,6 +74,7 @@ int main()
    int EBOX[40][48] = { {0, },{0, } };
    ebox(R, EBOX, Etable);
 
+   
    unsigned char key[8] =
    {
      0x13, 0x34, 0x57, 0x79,
@@ -74,6 +83,25 @@ int main()
    int key64[64] = { 0, };
    makekey64(key, key64);
 
+   
+   int pc1table[56] = { 0, };
+   const int pc1[56] =
+   {
+      57, 49, 41, 33, 25, 17, 9,
+      1, 58, 50, 42, 34, 26, 18,
+      10, 2, 59, 51, 43, 35, 27,
+      19, 11, 3, 60, 52, 44, 36,
+      63, 55, 47, 39, 31, 23, 15,
+      7, 62, 54, 46, 38, 30, 22,
+      14, 6, 61, 53, 45, 37, 29,
+      21, 13, 5, 28, 20, 12, 4
+   };
+   PC1(pc1, pc1table, key64);
+
+
+   int C0[28] = { 0, };
+   int D0[28] = { 0, };
+   devideCD(C0, D0, pc1table);
 }
 
 // --------------------------- 여기서부터 함수 구역 --------------------------- //
@@ -232,3 +260,22 @@ void makekey64(unsigned char key[8], int key64[64])
     }
 }
 
+void PC1(const int pc1[56], int pc1table[56], const int key64[64]) // 이제 해당 함수에서는 PC1에 사용할 테이블 만들어야 함
+{
+    for (int i = 0; i < 56; i++)
+    {
+        pc1table[i] = key64[pc1[i] - 1];
+    }
+}
+
+void devideCD(int C0[28], int D0[28], int pc1table[56])
+{
+    for (int i = 0; i < 28; i++)
+    {
+        C0[i] = pc1table[i];
+    }
+    for (int j = 0; j < 28; j++)
+    {
+        D0[j] = pc1table[j + 28];
+    }
+}
