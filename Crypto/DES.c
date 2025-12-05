@@ -14,7 +14,8 @@ void ebox(int R[40][32], int EBOX[40][48], const int Etable[48]);
 void makekey64(unsigned char key[8], int key64[64]);
 void PC1(const int pc1[56], int pc1table[56], const int key64[64]);
 void devideCD(int C0[28], int D0[28], int pc1table[56]);
-
+void shift1(int C0[28], int D0[28], int C1[28], int D1[28]);
+void CD1(int C1[28], int D1[28], int CDsum1[56]);
 
 
 int main()
@@ -102,6 +103,16 @@ int main()
    int C0[28] = { 0, };
    int D0[28] = { 0, };
    devideCD(C0, D0, pc1table);
+   
+
+   int C1[28] = { 0, };
+   int D1[28] = { 0, };
+   shift1(C0, D0, C1, D1);
+
+   
+   int CDsum1[56];
+   CD1(C1, D1, CDsum1);
+
 }
 
 // --------------------------- 여기서부터 함수 구역 --------------------------- //
@@ -277,5 +288,32 @@ void devideCD(int C0[28], int D0[28], int pc1table[56])
     for (int j = 0; j < 28; j++)
     {
         D0[j] = pc1table[j + 28];
+    }
+}
+
+void shift1(int C0[28], int D0[28], int C1[28], int D1[28])
+{
+    for (int i = 0; i < 27; i++)
+    {
+        C1[i] = C0[i + 1];
+    }
+    C1[27] = C0[0];
+
+    for (int j = 0; j < 27; j++)
+    {
+        D1[j] = D0[j + 1];
+    }
+    D1[27] = D0[0];
+}
+
+void CD1(int C1[28], int D1[28], int CDsum1[56])
+{
+    for (int i = 0; i < 28; i++)
+    {
+        CDsum1[i] = C1[i];
+    }
+    for (int j = 0; j < 28; j++)
+    {
+        CDsum1[j + 28] = D1[j];
     }
 }
