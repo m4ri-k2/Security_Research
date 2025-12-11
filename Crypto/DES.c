@@ -22,11 +22,13 @@ int main()
 {
    char pass0[6];
    char pass1[6];
+   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 5);
+   printf("HELLO! I am Mari, and I am the developer of this program :)");
    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);
-   printf("HELLO! I am Mari, and I am the developer of this program :)\nThis program does its best to encrypt your messages.\n");
+   printf("\nThis program does its best to encrypt your messages.\n");
    printf("We will now enter the world of cryptography!");
+   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 3);
    printf("\n\n=========================================================================================");
-   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
    printf("\n\n >> Please enter a 5-character password : ");
 
    
