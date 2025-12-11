@@ -16,6 +16,7 @@ void PC1(const int pc1[56], int pc1table[56], const int key64[64]);
 void devideCD(int C0[28], int D0[28], int pc1table[56]);
 void shift1(int C0[28], int D0[28], int C1[28], int D1[28]);
 void CD1(int C1[28], int D1[28], int CDsum1[56]);
+void PC2(const int pc2[48], int pc2table[48], int CDsum1[56]);
 
 
 int main()
@@ -115,6 +116,20 @@ int main()
    int CDsum1[56];
    CD1(C1, D1, CDsum1);
 
+   
+   int pc2table[48] = { 0, };
+   const int pc2[48] =
+   {
+     14, 17, 11, 24, 1, 5,
+     3, 28, 15, 6, 21, 10,
+     23, 19, 12, 4, 26, 8,
+     16, 7, 27, 20, 13, 2,
+     41, 52, 31, 37, 47, 55,
+     30, 40, 51, 45, 33, 48,
+     44, 49, 39, 56, 34, 53,
+     46, 42, 50, 36, 29, 32
+   };
+   PC2(pc2, pc2table, CDsum1);
 }
 
 // --------------------------- 여기서부터 함수 구역 --------------------------- //
@@ -318,5 +333,13 @@ void CD1(int C1[28], int D1[28], int CDsum1[56])
     for (int j = 0; j < 28; j++)
     {
         CDsum1[j + 28] = D1[j];
+    }
+}
+
+void PC2(const int pc2[48], int pc2table[48], int CDsum1[56])
+{
+    for (int i = 0; i < 48; i++)
+    {
+        pc2table[i] = CDsum1[pc2[i] - 1];
     }
 }
