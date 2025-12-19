@@ -9,8 +9,8 @@
 
 int password(char pass0[6], char pass1[6]);
 void compared(int ret);
-void plain(char message0[321], int message1[2560], int blocks[40][64]);
-void IP(int blocks[40][64], const int input[40][64], int output[40][64], const int ip[64]);
+void plain(char message0[301], int message1[2560], int blocks[40][64]);
+void IP(const int input[40][64], int output[40][64], const int ip[64]);
 void divide(int output[40][64], int L[40][32], int R[40][32]);
 void ebox(int R[40][32], int EBOX[40][48], const int Etable[48]);
 void makekey64(unsigned char key[8], int key64[64]);
@@ -40,7 +40,7 @@ int main()
     char pass0[6];
     char pass1[6];
     int ret = password(pass0, pass1);
-    char message0[321];
+    char message0[301];
     int message1[2560];
     int blocks[40][64];
     const int ip[64] =
@@ -110,24 +110,12 @@ int main()
 
     compared(ret);
     plain(message0, message1, blocks);
-    IP(blocks, input, output, ip);
+    IP(input, output, ip);
     divide(output, L, R);
     ebox(R, EBOX, Etable);
     makekey64(key, key64);
     PC1(pc1, pc1table, key64);
     devideCD(C, D, pc1table);
-
-    for (int round = 1; round <= 16; round++)
-    {
-        shift(C, D, round);
-        CD1(C, D, CD);
-        PC2(pc2, round_key[round], CD);
-
-         printf("K%02d: ", round);
-    for (int i = 0; i < 48; i++) printf("%d", round_key[round][i]);
-    printf("\n");
-    }
-
     shift(C, D, round);
     CD1(C, D, CD);
     PC2(pc2, out48, CD);
@@ -174,10 +162,10 @@ void compared(int ret)
     }
 }
 
-void plain(char message0[321], int message1[2560], int blocks[40][64])
+void plain(char message0[301], int message1[2560], int blocks[40][64])
 {
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
-    printf("\n >> Now, Enter your message in 320 characters!");
+    printf("\n >> Now, Enter your message in 300 characters!");
     printf("\n    If you have completed the input, please press the [ Enter key ].");
     printf("\n : ");
 
@@ -185,13 +173,13 @@ void plain(char message0[321], int message1[2560], int blocks[40][64])
     int pad = 0; // 1블록=1패드
     int block = 8; // 1블록 크기 지정
 
-    fgets(message0, 321, stdin); // message0에 320자 받기
+    fgets(message0, 301, stdin); // message0에 300자 받기
 
     len = strlen(message0); // message0에 받은 문자열 길이 재기
     message0[strcspn(message0, "\n")] = '\0'; // 엔터키 누르기 전까지의 길이를 재는 거임
     // len = strlen(message0); 얘 왜 두 번 넣었지 나중에 오류 안 나면 빼기 
 
-    if (len <= 320) // 320자보다 입력글자 수가 같거나 작은 경우
+    if (len <= 300) // 320자보다 입력글자 수가 같거나 작은 경우
     {
         if (len % block == 0) // 문자열을 1블록(= 8글자, bit로 환산하면 64bit) 단위로 나눴을 때 나누어떨어진다면(= 예시: 40자, 160자 등등)
         {
@@ -206,7 +194,7 @@ void plain(char message0[321], int message1[2560], int blocks[40][64])
     else // 320자를 넘기는 경우
     {
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 12);
-        printf("\n >> The character limit of 320 has been exceeded...bye...\n"); // 320자 초과하면 뜨는 메시지. 여기까지가 글자 받는 부분 끝.
+        printf("\n >> The character limit of 300 has been exceeded...bye...\n"); // 300자 초과하면 뜨는 메시지. 여기까지가 글자 받는 부분 끝.
     }
 
     // --------------------------- 여기서부터 암호화 알고리즘 시작 --------------------------- //
@@ -237,17 +225,8 @@ void plain(char message0[321], int message1[2560], int blocks[40][64])
     }
 }
 
-void IP(int blocks[40][64], const int input[40][64], int output[40][64], const int ip[64]) // const = 절대 원형 바뀌면 안 되는 애들.
+void IP(const int input[40][64], int output[40][64], const int ip[64]) // const = 절대 원형 바뀌면 안 되는 애들.
 {
-    for (int i = 0; i < 39; i++) // blocks에 있던 값 그대로 input이랑 output에 갖다 복사해야 됨
-    {
-        for (int j = 0; j < 63; j++)
-        {
-            blocks[i][j] = input[i][j];
-            blocks[i][j] = output[i][j];
-        }
-    }
-
     for (int i = 0; i < 40; i++) // IP 전치해야 하는 패드 40개 다 전치시킬 때까지 반복. 
     {
         for (int j = 0; j < 64; j++) // 그 패드에 있는 1번부터 64번까지 64개 다 바꿔서 옮길 때까지 반복
