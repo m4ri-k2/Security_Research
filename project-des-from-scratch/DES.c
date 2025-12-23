@@ -21,9 +21,13 @@ void shift(int C[28], int D[28], int round);
 void CD1(int C[28], int D[28], int CD[56]);
 void PC2(const int pc2[48], int out48[48], int CD[56]);
 const int shift_table[16] = { 0, 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 };
-
-
-
+void F(const int R[32], const int roundkey[48], int out32[32], const int Etable[48], const int Ptable[32], const int SBOX[8][4][16]);
+static void xor48(const int a[48], const int b[48], int out[48]); 
+static void pbox32(const int in32[32], int out32[32], const int Ptable[32]);
+static void sbox_6_to_4(const int six[6], const int S[4][16], int out4[4]);
+static void sboxes_48_to_32(const int in48[48], int out32[32], const int SBOX[8][4][16]);
+static void xor32(const int AA[32], const int BB[32], int outout[32]);
+void one_round(const int L[32], const int R[32], const int roundKey[48], int newL[32], int newR[32], const int Etable[48], const int Ptable[32], const int SBOX[8][4][16]);
 //---
 
 int main()
@@ -105,7 +109,23 @@ int main()
         44, 49, 39, 56, 34, 53,
         46, 42, 50, 36, 29, 32
     };
-
+    int out32[32];
+    const int Ptable[32];
+    const int SBOX[8][4][16];
+    const int a[48];
+    const int b[48];
+    int out[48];
+    const int in32[32];
+    int out32[32];
+    const int six[6];
+    const int S[4][16]; 
+    int out4[4];
+    const int in48[48];
+    const int AA[32];
+    const int BB[32];
+    int outout[32];
+    int newL[32];
+    int newR[32];
 
 
     compared(ret);
@@ -123,6 +143,19 @@ int main()
         CD1(C, D, CD);
         PC2(pc2, roundkey[round], CD);
     }
+
+    left_rotate_1(A);
+    shift(C, D, round);
+    CD1(C, D, CD);
+    PC2(pc2, out48, CD);
+    F(R, roundkey, out32, Etable, Ptable, SBOX);
+    xor48(a, b, out);
+    pbox32(in32, out32, Ptable);
+    sbox_6_to_4(six, S, out4);
+    sboxes_48_to_32(in48, out32, SBOX);
+    xor32(AA, BB, outout);
+    one_round(L, R, roundkey, newL, newR, Etable, Ptable, SBOX);
+
 }
 
 
@@ -234,7 +267,7 @@ void IP(const int input[40][64], int output[40][64], const int ip[64]) // const 
     {
         for (int j = 0; j < 64; j++) // 그 패드에 있는 1번부터 64번까지 64개 다 바꿔서 옮길 때까지 반복
         {
-            output[i][j] = input[i][ip[j] - 1]; // ip전치 식
+        output[i][j] = input[i][ip[j] - 1]; // ip전치 식
         }
     }
 }
@@ -303,15 +336,14 @@ void left_rotate_1(int A[28])
     int temp = A[0];
     for (int i = 0; i < 27; i++)
     {
-        A[i] = A[i + 1];
+      A[i] = A[i + 1];
     }
     A[27] = temp;
 }
 
 
 void shift(int C[28], int D[28], int round)
-{
-    
+{ 
     for (int k = 0; k < shift_table[round]; k++)
     {
         left_rotate_1(C);
@@ -339,3 +371,101 @@ void PC2(const int pc2[48], int out48[48], int CD[56])
        
     }
 }
+
+static void xor48(const int a[48], const int b[48], int out[48])
+{
+    for (int i = 0; i < 48; i++)
+    {
+        out[i] = a[i] ^ b[i];
+    }
+}
+
+static void pbox32(const int in32[32], int out32[32], const int Ptable[32])
+{
+    for (int i = 0; i < 32; i++)
+    {
+        out32[i] = in32[Ptable[i] - 1];
+    }
+}
+
+static void sbox_6_to_4(const int six[6], const int S[4][16], int out4[4])
+{
+    int row = (six[0] << 1) | six[5];
+    int col = (six[1] << 3) | (six[2] << 2) | (six[3] << 1) | six[4];
+
+    int val = S[row][col]; 
+
+    out4[0] = (val >> 3) & 1;
+    out4[1] = (val >> 2) & 1;
+    out4[2] = (val >> 1) & 1;
+    out4[3] = (val >> 0) & 1;
+}
+
+static void sboxes_48_to_32(const int in48[48], int out32[32], const int SBOX[8][4][16])
+{
+    for (int box = 0; box < 8; box++) 
+    {
+        int six[6];
+        for (int j = 0; j < 6; j++)
+        { 
+            six[j] = in48[box * 6 + j];
+        }
+
+        int out4[4];
+        sbox_6_to_4(six, SBOX[box], out4);
+
+        for (int k = 0; k < 4; k++)
+        {
+            out32[box * 4 + k] = out4[k];
+        }
+    }
+}
+
+void F(const int R[32], const int roundkey[48], int out32[32], const int Etable[48], const int Ptable[32], const int SBOX[8][4][16])
+{
+    int ER[48];     // E(R)
+    int X[48];      // ER XOR roundKey
+    int S_out[32];  // S-box output (32)
+    int P_out[32];  // P-box output (32)
+
+    // 1) ER = E(R)  (1-based table)
+    for (int j = 0; j < 48; j++) 
+    {
+        ER[j] = R[Etable[j] - 1];
+    } 
+    // 2) X = ER XOR roundKey
+    xor48(ER, roundkey, X);
+    // 3) S_out = S-boxes(X)
+    sboxes_48_to_32(X, S_out, SBOX);
+    // 4) P_out = P(S_out)
+    pbox32(S_out, P_out, Ptable);
+    // 5) out32 = P_out
+    for (int i = 0; i < 32; i++) 
+    {
+        out32[i] = P_out[i];
+    }
+}
+
+static void xor32(const int AA[32], const int BB[32], int outout[32])
+{
+   for (int i = 0; i < 32; i++)
+   {
+       outout[i] = AA[i] ^ BB[i];
+   }
+            
+}
+
+void one_round(const int L[32], const int R[32], const int roundkey[48], int newL[32], int newR[32], const int Etable[48], const int Ptable[32], const int SBOX[8][4][16])
+{
+    int f_out[32];
+    F(R, roundkey, f_out, Etable, Ptable, SBOX);
+    for (int i = 0; i < 32; i++) 
+    {
+        newL[i] = R[i];
+    }
+    xor32(L, f_out, newR);
+}
+
+
+
+
