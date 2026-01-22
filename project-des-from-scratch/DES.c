@@ -536,9 +536,9 @@ unsigned long long des_encrypt_block_bits(const int in64[64], const int ip[64], 
 	}
     // 2) divide
     int Lcur[32] = { 0 };
-	Rcur[32] = { 0 };
-	newL[32] = { 0 };
-	newR[32] = { 0 };
+	int Rcur[32] = { 0 };
+	int newL[32] = { 0 };
+	int newR[32] = { 0 };
     for (int i = 0; i < 32; i++) 
 	{
         Lcur[i] = perm[i];
